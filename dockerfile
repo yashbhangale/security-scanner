@@ -20,9 +20,11 @@ apt-get install -y docker-ce-cli
 RUN curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sh -s -- -b /usr/local/bin
 
 # Gitleaks
-RUN GITLEAKS_VERSION="8.21.2" && \
-    wget -q "https://github.com/gitleaks/gitleaks/releases/download/v${GITLEAKS_VERSION}/gitleaks_${GITLEAKS_VERSION}_linux_amd64.tar.gz" -O /tmp/gitleaks.tar.gz && \
+RUN GITLEAKS_VERSION="8.30.1" && \
+    wget -O /tmp/gitleaks.tar.gz \
+    "https://github.com/gitleaks/gitleaks/releases/download/v${GITLEAKS_VERSION}/gitleaks_${GITLEAKS_VERSION}_linux_x64.tar.gz" && \
     tar -xzf /tmp/gitleaks.tar.gz -C /usr/local/bin gitleaks && \
+    chmod +x /usr/local/bin/gitleaks && \
     rm /tmp/gitleaks.tar.gz
 
 # Syft
