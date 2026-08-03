@@ -49,6 +49,13 @@ RUN python3 -m venv /opt/security-tools && \
 
 ENV PATH="/opt/security-tools/bin:${PATH}"
 
+# SonarQube Scanner
+RUN wget -q https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-6.2.1.4610-linux-x64.zip -O /tmp/sonar-scanner.zip && \
+    unzip -q /tmp/sonar-scanner.zip -d /opt && \
+    mv /opt/sonar-scanner-* /opt/sonar-scanner && \
+    ln -s /opt/sonar-scanner/bin/sonar-scanner /usr/local/bin/sonar-scanner && \
+    rm /tmp/sonar-scanner.zip
+
 USER jenkins
 
 RUN jenkins-plugin-cli --plugins \
