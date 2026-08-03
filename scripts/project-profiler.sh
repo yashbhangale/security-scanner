@@ -41,52 +41,54 @@ declare -a PACKAGE_MANAGERS=()
 declare -a TECHNOLOGIES=()
 
 # -------------------------------------------------
-# Detect Languages
+# Detect Languages (searches recursively)
 # -------------------------------------------------
 
 echo "========== Languages =========="
 
-if [[ -f package.json ]]; then
+if find . -name "package.json" -not -path "./.git/*" -not -path "*/node_modules/*" | grep -q .; then
     echo "  Node.js"
     LANGUAGES+=("nodejs")
 fi
 
-if [[ -f pom.xml ]]; then
+if find . -name "pom.xml" -not -path "./.git/*" | grep -q .; then
     echo "  Java (Maven)"
     LANGUAGES+=("java")
 fi
 
-if [[ -f build.gradle || -f build.gradle.kts ]]; then
-    echo "  Java (Gradle)"
-    LANGUAGES+=("java")
+if find . \( -name "build.gradle" -o -name "build.gradle.kts" \) -not -path "./.git/*" | grep -q .; then
+    if [[ ! " ${LANGUAGES[*]} " =~ " java " ]]; then
+        echo "  Java (Gradle)"
+        LANGUAGES+=("java")
+    fi
 fi
 
-if [[ -f requirements.txt || -f pyproject.toml || -f setup.py || -f Pipfile ]]; then
+if find . \( -name "requirements.txt" -o -name "pyproject.toml" -o -name "setup.py" -o -name "Pipfile" \) -not -path "./.git/*" | grep -q .; then
     echo "  Python"
     LANGUAGES+=("python")
 fi
 
-if [[ -f go.mod ]]; then
+if find . -name "go.mod" -not -path "./.git/*" | grep -q .; then
     echo "  Go"
     LANGUAGES+=("go")
 fi
 
-if [[ -f Cargo.toml ]]; then
+if find . -name "Cargo.toml" -not -path "./.git/*" | grep -q .; then
     echo "  Rust"
     LANGUAGES+=("rust")
 fi
 
-if [[ -f composer.json ]]; then
+if find . -name "composer.json" -not -path "./.git/*" | grep -q .; then
     echo "  PHP"
     LANGUAGES+=("php")
 fi
 
-if [[ -f Gemfile ]]; then
+if find . -name "Gemfile" -not -path "./.git/*" | grep -q .; then
     echo "  Ruby"
     LANGUAGES+=("ruby")
 fi
 
-if ls ./*.csproj >/dev/null 2>&1 || ls ./**/*.csproj >/dev/null 2>&1; then
+if find . -name "*.csproj" -not -path "./.git/*" | grep -q .; then
     echo "  .NET"
     LANGUAGES+=("dotnet")
 fi
@@ -98,67 +100,67 @@ fi
 echo ""
 
 # -------------------------------------------------
-# Detect Package Managers
+# Detect Package Managers (searches recursively)
 # -------------------------------------------------
 
 echo "========== Package Managers =========="
 
-if [[ -f package-lock.json ]]; then
+if find . -name "package-lock.json" -not -path "./.git/*" -not -path "*/node_modules/*" | grep -q .; then
     echo "  npm"
     PACKAGE_MANAGERS+=("npm")
 fi
 
-if [[ -f pnpm-lock.yaml ]]; then
+if find . -name "pnpm-lock.yaml" -not -path "./.git/*" | grep -q .; then
     echo "  pnpm"
     PACKAGE_MANAGERS+=("pnpm")
 fi
 
-if [[ -f yarn.lock ]]; then
+if find . -name "yarn.lock" -not -path "./.git/*" | grep -q .; then
     echo "  yarn"
     PACKAGE_MANAGERS+=("yarn")
 fi
 
-if [[ -f pom.xml ]]; then
+if find . -name "pom.xml" -not -path "./.git/*" | grep -q .; then
     echo "  Maven"
     PACKAGE_MANAGERS+=("maven")
 fi
 
-if [[ -f build.gradle || -f build.gradle.kts ]]; then
+if find . \( -name "build.gradle" -o -name "build.gradle.kts" \) -not -path "./.git/*" | grep -q .; then
     echo "  Gradle"
     PACKAGE_MANAGERS+=("gradle")
 fi
 
-if [[ -f poetry.lock || -f pyproject.toml ]]; then
+if find . \( -name "poetry.lock" -o -name "pyproject.toml" \) -not -path "./.git/*" | grep -q .; then
     echo "  Poetry"
     PACKAGE_MANAGERS+=("poetry")
 fi
 
-if [[ -f Pipfile.lock ]]; then
+if find . -name "Pipfile.lock" -not -path "./.git/*" | grep -q .; then
     echo "  Pipenv"
     PACKAGE_MANAGERS+=("pipenv")
 fi
 
-if [[ -f requirements.txt ]]; then
+if find . -name "requirements.txt" -not -path "./.git/*" | grep -q .; then
     echo "  pip"
     PACKAGE_MANAGERS+=("pip")
 fi
 
-if [[ -f Cargo.lock ]]; then
+if find . -name "Cargo.lock" -not -path "./.git/*" | grep -q .; then
     echo "  Cargo"
     PACKAGE_MANAGERS+=("cargo")
 fi
 
-if [[ -f go.sum ]]; then
+if find . -name "go.sum" -not -path "./.git/*" | grep -q .; then
     echo "  Go Modules"
     PACKAGE_MANAGERS+=("gomod")
 fi
 
-if [[ -f composer.lock ]]; then
+if find . -name "composer.lock" -not -path "./.git/*" | grep -q .; then
     echo "  Composer"
     PACKAGE_MANAGERS+=("composer")
 fi
 
-if [[ -f Gemfile.lock ]]; then
+if find . -name "Gemfile.lock" -not -path "./.git/*" | grep -q .; then
     echo "  Bundler"
     PACKAGE_MANAGERS+=("bundler")
 fi

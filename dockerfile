@@ -3,7 +3,7 @@ FROM jenkins/jenkins:lts-jdk21
 USER root
 
 RUN apt-get update && \
-    apt-get install -y git curl wget unzip && \
+    apt-get install -y git curl wget unzip python3 python3-pip && \
     apt-get clean
 
 # Docker CLI
@@ -16,6 +16,33 @@ echo \
 apt-get update && \
 apt-get install -y docker-ce-cli
 
+# Trivy
+RUN curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sh -s -- -b /usr/local/bin
+
+# Gitleaks
+RUN GITLEAKS_VERSION=$(curl -s https://api.github.com/repos/gitleaks/gitleaks/releases/latest | grep '"tag_name"' | sed 's/.*"v\(.*\)".*/\1/') && \
+    wget -q "https://github.com/gitleaks/gitleaks/releases/download/v${GITLEAKS_VERSION}/gitleaks_${GITLEAKS_VERSION}_linux_amd64.tar.gz" -O /tmp/gitleaks.tar.gz && \
+    tar -xzf /tmp/gitleaks.tar.gz -C /usr/local/bin gitleaks && \
+    rm /tmp/gitleaks.tar.gz
+
+# Syft
+RUN curl -sSfL https://raw.githubusercontent.com/anchore/syft/main/install.sh | sh -s -- -b /usr/local/bin
+
+# Grype
+RUN curl -sSfL https://raw.githubusercontent.com/anchore/grype/main/install.sh | sh -s -- -b /usr/local/bin
+
+# Hadolint
+RUN wget -q https://github.com/hadolint/hadolint/releases/latest/download/hadolint-Linux-x86_64 -O /usr/local/bin/hadolint && \
+    chmod +x /usr/local/bin/hadolint
+
+# kube-linter
+RUN KUBELINTER_VERSION=$(curl -s https://api.github.com/repos/stackrox/kube-linter/releases/latest | grep '"tag_name"' | sed 's/.*"v\(.*\)".*/\1/') && \
+    wget -q "https://github.com/stackrox/kube-linter/releases/download/v${KUBELINTER_VERSION}/kube-linter-linux" -O /usr/local/bin/kube-linter && \
+    chmod +x /usr/local/bin/kube-linter
+
+# Semgrep + Checkov (Python tools)
+RUN pip install --break-system-packages semgrep checkov
+
 USER jenkins
 
 RUN jenkins-plugin-cli --plugins \
@@ -24,4 +51,7 @@ RUN jenkins-plugin-cli --plugins \
     workflow-aggregator \
     git \
     github \
-    pipeline-stage-view
+    pipeline-stage-view \
+    pipeline-utility-steps \
+    htmlpublisher \
+    email-ext
