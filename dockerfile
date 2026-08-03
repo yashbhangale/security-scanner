@@ -20,7 +20,7 @@ apt-get install -y docker-ce-cli
 RUN curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sh -s -- -b /usr/local/bin
 
 # Gitleaks
-RUN GITLEAKS_VERSION=$(curl -s https://api.github.com/repos/gitleaks/gitleaks/releases/latest | grep '"tag_name"' | sed 's/.*"v\(.*\)".*/\1/') && \
+RUN GITLEAKS_VERSION="8.21.2" && \
     wget -q "https://github.com/gitleaks/gitleaks/releases/download/v${GITLEAKS_VERSION}/gitleaks_${GITLEAKS_VERSION}_linux_amd64.tar.gz" -O /tmp/gitleaks.tar.gz && \
     tar -xzf /tmp/gitleaks.tar.gz -C /usr/local/bin gitleaks && \
     rm /tmp/gitleaks.tar.gz
@@ -36,7 +36,7 @@ RUN wget -q https://github.com/hadolint/hadolint/releases/latest/download/hadoli
     chmod +x /usr/local/bin/hadolint
 
 # kube-linter
-RUN KUBELINTER_VERSION=$(curl -s https://api.github.com/repos/stackrox/kube-linter/releases/latest | grep '"tag_name"' | sed 's/.*"v\(.*\)".*/\1/') && \
+RUN KUBELINTER_VERSION="0.7.1" && \
     wget -q "https://github.com/stackrox/kube-linter/releases/download/v${KUBELINTER_VERSION}/kube-linter-linux" -O /usr/local/bin/kube-linter && \
     chmod +x /usr/local/bin/kube-linter
 
