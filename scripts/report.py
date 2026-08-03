@@ -332,24 +332,26 @@ def calculate_score(trivy, gitleaks, semgrep, grype, checkov, hadolint, kube_lin
 
 
 def build_scanner_card(title, status, rows):
-    """Build an HTML scanner card."""
-    status_class = {
-        'pass': 'status-pass',
-        'warn': 'status-warn',
-        'fail': 'status-fail',
-        'skipped': 'status-skipped'
-    }.get(status, 'status-skipped')
-
+    """Build an HTML scanner card with inline styles."""
+    status_colors = {
+        'pass': ('#1b5e20', '#66bb6a'),
+        'warn': ('#e65100', '#ffa726'),
+        'fail': ('#b71c1c', '#ef5350'),
+        'skipped': ('#37474f', '#90a4ae')
+    }
+    bg_color, text_color = status_colors.get(status, ('#37474f', '#90a4ae'))
     status_label = status.upper()
 
     rows_html = ''
     for label, value in rows:
-        rows_html += f'<tr><td>{label}</td><td>{value}</td></tr>\n'
+        rows_html += f'<tr><td style="padding:8px 12px;border-bottom:1px solid #1f4068;color:#90a4ae;">{label}</td><td style="padding:8px 12px;border-bottom:1px solid #1f4068;text-align:right;font-weight:600;color:#e0e0e0;">{value}</td></tr>\n'
 
     return f'''
-    <div class="scanner-card">
-        <h3>{title} <span class="status {status_class}">{status_label}</span></h3>
-        <table>
+    <div style="background:#16213e;border:1px solid #1f4068;border-radius:10px;padding:20px;margin-bottom:16px;display:inline-block;width:48%;vertical-align:top;margin-right:2%;">
+        <h3 style="margin:0 0 14px;color:#e0e0e0;font-size:1rem;">{title}
+            <span style="display:inline-block;padding:3px 10px;border-radius:4px;font-size:0.7rem;font-weight:700;background:{bg_color};color:{text_color};margin-left:8px;vertical-align:middle;">{status_label}</span>
+        </h3>
+        <table style="width:100%;border-collapse:collapse;">
             {rows_html}
         </table>
     </div>
@@ -357,9 +359,9 @@ def build_scanner_card(title, status, rows):
 
 
 def build_findings_table(all_findings):
-    """Build the top findings HTML table."""
+    """Build the top findings HTML table with inline styles."""
     if not all_findings:
-        return '<p class="no-data">No findings to display.</p>'
+        return '<p style="color:#90a4ae;font-style:italic;padding:10px 0;">No findings to display.</p>'
 
     # Sort by severity: Critical > High > Medium > Low
     severity_order = {'CRITICAL': 0, 'HIGH': 1, 'MEDIUM': 2, 'LOW': 3}
@@ -368,33 +370,35 @@ def build_findings_table(all_findings):
         key=lambda x: severity_order.get(x['severity'].upper(), 4)
     )[:30]  # Top 30 findings
 
+    badge_styles = {
+        'CRITICAL': 'background:#b71c1c;color:#ef5350;',
+        'HIGH': 'background:#e65100;color:#ffa726;',
+        'MEDIUM': 'background:#f57f17;color:#ffc107;',
+        'LOW': 'background:#0d47a1;color:#4fc3f7;'
+    }
+
     rows = ''
     for f in sorted_findings:
         sev = f['severity'].upper()
-        badge_class = {
-            'CRITICAL': 'badge-critical',
-            'HIGH': 'badge-high',
-            'MEDIUM': 'badge-medium',
-            'LOW': 'badge-low'
-        }.get(sev, 'badge-low')
+        badge_style = badge_styles.get(sev, badge_styles['LOW'])
 
         rows += f'''<tr>
-            <td><span class="badge {badge_class}">{sev}</span></td>
-            <td>{f['scanner']}</td>
-            <td>{f['title']}</td>
-            <td>{f['description']}</td>
-            <td>{f['target']}</td>
+            <td style="padding:10px 12px;border-bottom:1px solid #1f4068;"><span style="display:inline-block;padding:3px 8px;border-radius:4px;font-size:0.7rem;font-weight:700;{badge_style}">{sev}</span></td>
+            <td style="padding:10px 12px;border-bottom:1px solid #1f4068;color:#e0e0e0;">{f['scanner']}</td>
+            <td style="padding:10px 12px;border-bottom:1px solid #1f4068;color:#4fc3f7;font-family:monospace;font-size:0.85rem;">{f['title']}</td>
+            <td style="padding:10px 12px;border-bottom:1px solid #1f4068;color:#b0bec5;font-size:0.85rem;">{f['description']}</td>
+            <td style="padding:10px 12px;border-bottom:1px solid #1f4068;color:#78909c;font-size:0.85rem;">{f['target']}</td>
         </tr>\n'''
 
     return f'''
-    <table class="findings-table">
+    <table style="width:100%;border-collapse:collapse;font-size:0.9rem;background:#16213e;border:1px solid #1f4068;border-radius:8px;">
         <thead>
             <tr>
-                <th>Severity</th>
-                <th>Scanner</th>
-                <th>ID</th>
-                <th>Description</th>
-                <th>Target</th>
+                <th style="background:#0f3460;padding:12px;text-align:left;font-weight:600;color:#4fc3f7;border-bottom:2px solid #1f4068;">Severity</th>
+                <th style="background:#0f3460;padding:12px;text-align:left;font-weight:600;color:#4fc3f7;border-bottom:2px solid #1f4068;">Scanner</th>
+                <th style="background:#0f3460;padding:12px;text-align:left;font-weight:600;color:#4fc3f7;border-bottom:2px solid #1f4068;">ID</th>
+                <th style="background:#0f3460;padding:12px;text-align:left;font-weight:600;color:#4fc3f7;border-bottom:2px solid #1f4068;">Description</th>
+                <th style="background:#0f3460;padding:12px;text-align:left;font-weight:600;color:#4fc3f7;border-bottom:2px solid #1f4068;">Target</th>
             </tr>
         </thead>
         <tbody>
@@ -425,10 +429,10 @@ def build_download_links(reports_dir):
     for filepath, label in report_files:
         full_path = os.path.join(reports_dir, filepath)
         if os.path.exists(full_path):
-            links.append(f'<a href="{filepath}">{label}</a>')
+            links.append(f'<a href="{filepath}" style="display:inline-block;margin:6px 10px;padding:10px 20px;background:#0f3460;color:#4fc3f7;border-radius:6px;text-decoration:none;font-size:0.9rem;border:1px solid #1f4068;">{label}</a>')
 
     if not links:
-        return '<p class="no-data">No report files available for download.</p>'
+        return '<p style="color:#90a4ae;font-style:italic;">No report files available for download.</p>'
 
     return '\n'.join(links)
 
@@ -457,15 +461,19 @@ def generate_report(reports_dir, template_path, output_path):
     # Calculate security score
     score = calculate_score(trivy, gitleaks, semgrep, grype, checkov, hadolint, kube_linter)
 
-    # Determine score class
+    # Determine score color
     if score >= 80:
         score_class = 'score-good'
+        score_border_color = '#66bb6a'
     elif score >= 60:
         score_class = 'score-medium'
+        score_border_color = '#ffc107'
     elif score >= 40:
         score_class = 'score-high'
+        score_border_color = '#ff9800'
     else:
         score_class = 'score-critical'
+        score_border_color = '#ef5350'
 
     # Build scanner cards
     scanner_cards = ''
@@ -612,6 +620,7 @@ def generate_report(reports_dir, template_path, output_path):
         '{{ scanners_run }}': str(scanners_run),
         '{{ security_score }}': str(score),
         '{{ score_class }}': score_class,
+        '{{ score_border_color }}': score_border_color,
         '{{ critical_count }}': str(total_critical),
         '{{ high_count }}': str(total_high),
         '{{ medium_count }}': str(total_medium),
