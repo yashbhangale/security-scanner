@@ -3,7 +3,7 @@ FROM jenkins/jenkins:lts-jdk21
 USER root
 
 RUN apt-get update && \
-    apt-get install -y git curl wget unzip python3 python3-pip && \
+    apt-get install -y git curl wget unzip python3 python3-pip python3-venv && \
     apt-get clean
 
 # Docker CLI
@@ -42,8 +42,12 @@ RUN KUBELINTER_VERSION="0.7.1" && \
     wget -q "https://github.com/stackrox/kube-linter/releases/download/v${KUBELINTER_VERSION}/kube-linter-linux" -O /usr/local/bin/kube-linter && \
     chmod +x /usr/local/bin/kube-linter
 
-# Semgrep + Checkov (Python tools)
-RUN pip install --break-system-packages semgrep checkov
+# Semgrep + Checkov (Python tools in venv)
+RUN python3 -m venv /opt/security-tools && \
+    /opt/security-tools/bin/pip install --upgrade pip && \
+    /opt/security-tools/bin/pip install semgrep checkov
+
+ENV PATH="/opt/security-tools/bin:${PATH}"
 
 USER jenkins
 
