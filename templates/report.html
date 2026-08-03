@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Security Scan Report - {{ repository }}</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, sans-serif;
+            background: #0f1419;
+            color: #e1e8ed;
+            line-height: 1.6;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            padding: 30px 0;
+            border-bottom: 1px solid #2d3748;
+            margin-bottom: 30px;
+        }
+
+        header h1 {
+            font-size: 2rem;
+            color: #63b3ed;
+            margin-bottom: 10px;
+        }
+
+        header .subtitle {
+            color: #a0aec0;
+            font-size: 0.95rem;
+        }
+
+        .meta-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .meta-card {
+            background: #1a202c;
+            border: 1px solid #2d3748;
+            border-radius: 8px;
+            padding: 15px;
+        }
+
+        .meta-card .label {
+            color: #a0aec0;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .meta-card .value {
+            color: #e2e8f0;
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-top: 4px;
+            word-break: break-all;
+        }
+
+        .score-section {
+            text-align: center;
+            margin: 30px 0;
+        }
+
+        .score-circle {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            font-size: 2.5rem;
+            font-weight: bold;
+            border: 6px solid;
+        }
+
+        .score-critical { border-color: #fc8181; color: #fc8181; }
+        .score-high { border-color: #f6ad55; color: #f6ad55; }
+        .score-medium { border-color: #fbd38d; color: #fbd38d; }
+        .score-good { border-color: #68d391; color: #68d391; }
+
+        .severity-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+            margin: 30px 0;
+        }
+
+        .severity-card {
+            text-align: center;
+            padding: 20px;
+            border-radius: 8px;
+            background: #1a202c;
+            border: 1px solid #2d3748;
+        }
+
+        .severity-card .count {
+            font-size: 2rem;
+            font-weight: bold;
+        }
+
+        .severity-card .label {
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            margin-top: 5px;
+        }
+
+        .severity-critical .count { color: #fc8181; }
+        .severity-high .count { color: #f6ad55; }
+        .severity-medium .count { color: #fbd38d; }
+        .severity-low .count { color: #90cdf4; }
+
+        .section {
+            margin: 30px 0;
+        }
+
+        .section h2 {
+            font-size: 1.3rem;
+            color: #63b3ed;
+            margin-bottom: 15px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid #2d3748;
+        }
+
+        .scanner-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 20px;
+        }
+
+        .scanner-card {
+            background: #1a202c;
+            border: 1px solid #2d3748;
+            border-radius: 8px;
+            padding: 20px;
+        }
+
+        .scanner-card h3 {
+            color: #e2e8f0;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .scanner-card .status {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .status-pass { background: #22543d; color: #68d391; }
+        .status-warn { background: #744210; color: #fbd38d; }
+        .status-fail { background: #742a2a; color: #fc8181; }
+        .status-skipped { background: #2d3748; color: #a0aec0; }
+
+        .scanner-card table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+
+        .scanner-card td {
+            padding: 6px 0;
+            border-bottom: 1px solid #2d3748;
+        }
+
+        .scanner-card td:first-child {
+            color: #a0aec0;
+        }
+
+        .scanner-card td:last-child {
+            text-align: right;
+            font-weight: 600;
+        }
+
+        .findings-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+            font-size: 0.9rem;
+        }
+
+        .findings-table th {
+            background: #2d3748;
+            padding: 10px;
+            text-align: left;
+            font-weight: 600;
+        }
+
+        .findings-table td {
+            padding: 8px 10px;
+            border-bottom: 1px solid #2d3748;
+        }
+
+        .findings-table tr:hover {
+            background: #2d3748;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .badge-critical { background: #742a2a; color: #fc8181; }
+        .badge-high { background: #744210; color: #f6ad55; }
+        .badge-medium { background: #5a4a1e; color: #fbd38d; }
+        .badge-low { background: #1a365d; color: #90cdf4; }
+
+        footer {
+            text-align: center;
+            padding: 30px 0;
+            margin-top: 40px;
+            border-top: 1px solid #2d3748;
+            color: #a0aec0;
+            font-size: 0.85rem;
+        }
+
+        .download-section {
+            margin: 20px 0;
+            text-align: center;
+        }
+
+        .download-section a {
+            display: inline-block;
+            margin: 5px 10px;
+            padding: 8px 16px;
+            background: #2d3748;
+            color: #63b3ed;
+            border-radius: 6px;
+            text-decoration: none;
+            font-size: 0.9rem;
+        }
+
+        .download-section a:hover {
+            background: #4a5568;
+        }
+
+        .no-data {
+            color: #a0aec0;
+            font-style: italic;
+            padding: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Security Scan Report</h1>
+            <p class="subtitle">{{ repository }} &mdash; {{ scan_date }}</p>
+        </header>
+
+        <div class="meta-grid">
+            <div class="meta-card">
+                <div class="label">Repository</div>
+                <div class="value">{{ repository }}</div>
+            </div>
+            <div class="meta-card">
+                <div class="label">Branch</div>
+                <div class="value">{{ branch }}</div>
+            </div>
+            <div class="meta-card">
+                <div class="label">Commit</div>
+                <div class="value">{{ commit }}</div>
+            </div>
+            <div class="meta-card">
+                <div class="label">Languages</div>
+                <div class="value">{{ languages }}</div>
+            </div>
+            <div class="meta-card">
+                <div class="label">Scan Date</div>
+                <div class="value">{{ scan_date }}</div>
+            </div>
+            <div class="meta-card">
+                <div class="label">Scanners Run</div>
+                <div class="value">{{ scanners_run }}</div>
+            </div>
+        </div>
+
+        <div class="score-section">
+            <div class="score-circle {{ score_class }}">{{ security_score }}</div>
+            <p style="margin-top: 10px; color: #a0aec0;">Security Score</p>
+        </div>
+
+        <div class="severity-grid">
+            <div class="severity-card severity-critical">
+                <div class="count">{{ critical_count }}</div>
+                <div class="label">Critical</div>
+            </div>
+            <div class="severity-card severity-high">
+                <div class="count">{{ high_count }}</div>
+                <div class="label">High</div>
+            </div>
+            <div class="severity-card severity-medium">
+                <div class="count">{{ medium_count }}</div>
+                <div class="label">Medium</div>
+            </div>
+            <div class="severity-card severity-low">
+                <div class="count">{{ low_count }}</div>
+                <div class="label">Low</div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>Scanner Results</h2>
+            <div class="scanner-grid">
+                {{ scanner_cards }}
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>Top Findings</h2>
+            {{ findings_table }}
+        </div>
+
+        <div class="section download-section">
+            <h2>Download Reports</h2>
+            {{ download_links }}
+        </div>
+
+        <footer>
+            <p>Generated by Security Scanner &mdash; {{ scan_date }}</p>
+        </footer>
+    </div>
+</body>
+</html>

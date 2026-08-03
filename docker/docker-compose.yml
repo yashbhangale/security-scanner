@@ -1,0 +1,66 @@
+version: '3.8'
+
+services:
+  jenkins:
+    build:
+      context: ..
+      dockerfile: dockerfile
+    container_name: jenkins
+    restart: unless-stopped
+    networks:
+      - scanner-network
+    ports:
+      - "8080:8080"
+      - "50000:50000"
+    environment:
+      - DOCKER_HOST=tcp://docker:2376
+      - DOCKER_CERT_PATH=/certs/client
+      - DOCKER_TLS_VERIFY=1
+      - SONAR_HOST_URL=http://sonarqube:9000
+    volumes:
+      - jenkins-data:/var/jenkins_home
+      - jenkins-docker-certs:/certs/client:ro
+    depends_on:
+      - dind
+      - sonarqube
+
+  dind:
+    image: docker:dind
+    container_name: jenkins-docker
+    restart: unless-stopped
+    privileged: true
+    networks:
+      scanner-network:
+        aliases:
+          - docker
+    environment:
+      - DOCKER_TLS_CERTDIR=/certs
+    volumes:
+      - jenkins-docker-certs:/certs/client
+      - jenkins-data:/var/jenkins_home
+
+  sonarqube:
+    image: sonarqube:lts-community
+    container_name: sonarqube
+    restart: unless-stopped
+    networks:
+      - scanner-network
+    ports:
+      - "9000:9000"
+    environment:
+      - SONAR_ES_BOOTSTRAP_CHECKS_DISABLE=true
+    volumes:
+      - sonarqube-data:/opt/sonarqube/data
+      - sonarqube-logs:/opt/sonarqube/logs
+      - sonarqube-extensions:/opt/sonarqube/extensions
+
+networks:
+  scanner-network:
+    driver: bridge
+
+volumes:
+  jenkins-data:
+  jenkins-docker-certs:
+  sonarqube-data:
+  sonarqube-logs:
+  sonarqube-extensions:
