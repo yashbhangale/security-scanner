@@ -47,9 +47,27 @@ pipeline {
                 }
                 script {
                     def profile = readJSON file: "${TARGET_REPO}/reports/profile.json"
-                    env.SCANNERS = profile.scanners.join(',')
-                    env.LANGUAGES = profile.languages.join(',')
-                    env.TECHNOLOGIES = profile.technologies.join(',')
+                    def scannerList = ""
+                    for (int i = 0; i < profile.scanners.size(); i++) {
+                        if (i > 0) scannerList += ","
+                        scannerList += profile.scanners[i]
+                    }
+                    env.SCANNERS = scannerList
+
+                    def langList = ""
+                    for (int i = 0; i < profile.languages.size(); i++) {
+                        if (i > 0) langList += ","
+                        langList += profile.languages[i]
+                    }
+                    env.LANGUAGES = langList
+
+                    def techList = ""
+                    for (int i = 0; i < profile.technologies.size(); i++) {
+                        if (i > 0) techList += ","
+                        techList += profile.technologies[i]
+                    }
+                    env.TECHNOLOGIES = techList
+
                     echo "Detected Languages: ${env.LANGUAGES}"
                     echo "Detected Technologies: ${env.TECHNOLOGIES}"
                     echo "Recommended Scanners: ${env.SCANNERS}"
